@@ -69,9 +69,7 @@ const Footer = () => {
               <Link to="/about" className="block text-background/70 hover:text-primary transition-colors">
                 About Us
               </Link>
-              <Link to="/#donate" className="block text-background/70 hover:text-primary transition-colors">
-                Donate Now
-              </Link>
+              <Link to="/donate-upi"   className="block text-background/70 hover:text-primary transition-colors">  Donate via UPI</Link>
               <Link to="/impact/education" className="block text-background/70 hover:text-primary transition-colors">
                 Our Programs
               </Link>

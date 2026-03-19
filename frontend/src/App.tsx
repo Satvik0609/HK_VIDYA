@@ -17,6 +17,7 @@ import TaxBenefits from "./pages/TaxBenefits";
 import ContactUs from "./pages/ContactUs";
 import FAQ from "./pages/FAQ";
 import Gallery from "./pages/Gallery";
+import DonateUPI from "./components/donation/donateupi";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/impact/education" element={<ImpactEducation />} />
           <Route path="/impact/food-education" element={<ImpactFoodEducation />} />
           <Route path="/impact/complete-care" element={<ImpactCompleteCare />} />
+          <Route path="/donate-upi" element={<DonateUPI />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
