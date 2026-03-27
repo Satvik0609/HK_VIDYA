@@ -17,7 +17,7 @@ import TaxBenefits from "./pages/TaxBenefits";
 import ContactUs from "./pages/ContactUs";
 import FAQ from "./pages/FAQ";
 import Gallery from "./pages/Gallery";
-import DonateUPI from "./components/donation/donateupi";
+import DonateUPI from "./components/donation/DonateUPI";
 
 const queryClient = new QueryClient();
 
