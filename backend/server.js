@@ -228,6 +228,325 @@
 //updated code is below
 
 
+// require("dotenv").config();
+// const express = require("express");
+// const cors = require("cors");
+// const Razorpay = require("razorpay");
+// const db = require("./config/db");
+
+// const app = express();
+// app.use(cors());
+// app.use(express.json());
+
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_BANK_KEY_ID,
+//   key_secret: process.env.RAZORPAY_BANK_SECRET
+// });
+
+// /*
+// ===============================
+// CREATE SUBSCRIPTION (AUTOPAY)
+// ===============================
+// */
+
+// app.post("/create-subscription", async (req, res) => {
+//   try {
+//     const {
+//       fullName,
+//       email,
+//       phone,
+//       pan,
+//       planType,
+//       childrenCount
+//     } = req.body;
+
+//     let amount = 0;
+
+//    if (planType === "education") amount = 800;
+//    else if (planType === "food-education") amount = 1000;
+//    else if (planType === "complete") amount = 1500;
+
+//     let planId = "";
+
+//     // 👉 Map frontend plan → Razorpay plan
+//     if (planType === "education") planId = "plan_SSedvRfVSTjI8W";
+//     else if (planType === "food-education") planId = "plan_SSefAxfzZUbUS5";
+//     else if (planType === "complete") planId = "plan_SSegFkIF03pob7";
+//     else {
+//       return res.status(400).json({ error: "Invalid plan" });
+//     }
+
+//     let subscriptions = [];
+
+//     // 🔥 Create subscription per child
+//     for (let i = 0; i < childrenCount; i++) {
+
+
+
+//       // 1. Create customer
+// const customers = await razorpay.customers.all({
+//   email: email
+// });
+
+// let customer;
+
+// if (customers.items.length > 0) {
+//   customer = customers.items[0]; // ✅ reuse
+// } else {
+//   customer = await razorpay.customers.create({
+//     name: fullName,
+//     email: email,
+//     contact: phone
+//   });
+// }
+
+// // 2. Create subscription
+// const subscription = await razorpay.subscriptions.create({
+//   plan_id: planId,
+//   customer_id: customer.id,
+//   customer_notify: 1,
+//   total_count: 12
+// });
+
+//       // Save each subscription
+//       await db.execute(
+//         `INSERT INTO donors 
+//          (full_name, email, phone, pan, plan_type, children_count, amount, razorpay_subscription_id, payment_mode)
+//          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+//         [
+//           fullName,
+//           email,
+//           phone,
+//           pan,
+//           planType,
+//           1, // per child
+//           amount,
+//           subscription.id,
+//           "autopay"
+//         ]
+//       );
+
+//       subscriptions.push(subscription);
+//     }
+
+//     res.json({
+//       success: true,
+//       subscriptions
+//     });
+
+//   } catch (error) {
+//     console.error("SUBSCRIPTION ERROR:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// app.listen(5000, () =>
+//   console.log("Server running on port 5000")
+// );
+
+
+
+
+
+
+
+// require("dotenv").config();
+// const express = require("express");
+// const cors = require("cors");
+// const Razorpay = require("razorpay");
+// const db = require("./config/db");
+
+// const app = express();
+// app.use(cors());
+// app.use(express.json());
+
+// const razorpay = new Razorpay({
+//   key_id: process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET
+// });
+
+// /*
+// ===============================
+// HELPER: GET OR CREATE PLAN
+// ===============================
+// */
+
+// const getOrCreatePlan = async (amount) => {
+//   const amountInPaise = amount * 100;
+
+//   // 1️⃣ Fetch existing plans
+//   const plans = await razorpay.plans.all({ count: 100 });
+
+//   // 2️⃣ Try to find matching plan
+//   const existingPlan = plans.items.find(
+//     (p) =>
+//       p.item.amount === amountInPaise &&
+//       p.period === "monthly"
+//   );
+
+//   if (existingPlan) {
+//     console.log("✅ Reusing existing plan:", existingPlan.id);
+//     return existingPlan.id;
+//   }
+
+//   // 3️⃣ Create new plan if not found
+//   const newPlan = await razorpay.plans.create({
+//     period: "monthly",
+//     interval: 1,
+//     item: {
+//       name: `Custom Plan ₹${amount}`,
+//       amount: amountInPaise,
+//       currency: "INR",
+//       description: "Custom monthly donation"
+//     }
+//   });
+
+//   console.log("🆕 Created new plan:", newPlan.id);
+
+//   return newPlan.id;
+// };
+
+// /*
+// ===============================
+// CREATE SUBSCRIPTION
+// ===============================
+// */
+
+// app.post("/create-subscription", async (req, res) => {
+//   try {
+//     const {
+//       fullName,
+//       email,
+//       phone,
+//       pan,
+//       planType,
+//       childrenCount,
+//       customAmount
+//     } = req.body;
+
+//     let amount = 0;
+//     let planId = "";
+
+//     /*
+//     ===============================
+//     DEFAULT PLANS
+//     ===============================
+//     */
+
+//     if (planType === "education") {
+//       amount = 800;
+//       planId = "plan_SSedvRfVSTjI8W";
+//     } 
+//     else if (planType === "food-education") {
+//       amount = 1000;
+//       planId = "plan_SSefAxfzZUbUS5";
+//     } 
+//     else if (planType === "complete") {
+//       amount = 1500;
+//       planId = "plan_SSegFkIF03pob7";
+//     }
+
+//     /*
+//     ===============================
+//     CUSTOM PLAN (OPTIMIZED)
+//     ===============================
+//     */
+
+//     else if (planType === "custom") {
+
+//       if (!customAmount || customAmount <= 0) {
+//         return res.status(400).json({ error: "Invalid custom amount" });
+//       }
+
+//       amount = customAmount;
+
+//       // 🔥 OPTIMIZED PLAN HANDLING
+//       planId = await getOrCreatePlan(customAmount);
+//     }
+
+//     else {
+//       return res.status(400).json({ error: "Invalid plan" });
+//     }
+
+//     /*
+//     ===============================
+//     CUSTOMER (REUSE)
+//     ===============================
+//     */
+
+//     const customers = await razorpay.customers.all({ email });
+
+//     let customer;
+
+//     if (customers.items.length > 0) {
+//       customer = customers.items[0];
+//     } else {
+//       customer = await razorpay.customers.create({
+//         name: fullName,
+//         email,
+//         contact: phone
+//       });
+//     }
+
+//     /*
+//     ===============================
+//     CREATE SUBSCRIPTIONS
+//     ===============================
+//     */
+
+//     let subscriptions = [];
+
+//     for (let i = 0; i < childrenCount; i++) {
+
+//       const subscription = await razorpay.subscriptions.create({
+//         plan_id: planId,
+//         customer_id: customer.id,
+//         customer_notify: 1,
+//         total_count: 12
+//       });
+
+//       await db.execute(
+//         `INSERT INTO donors 
+//          (full_name, email, phone, pan, plan_type, children_count, amount, razorpay_subscription_id, payment_mode)
+//          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+//         [
+//           fullName,
+//           email,
+//           phone,
+//           pan,
+//           planType,
+//           1,
+//           amount,
+//           subscription.id,
+//           "autopay"
+//         ]
+//       );
+
+//       subscriptions.push(subscription);
+//     }
+
+//     res.json({
+//       success: true,
+//       subscriptions
+//     });
+
+//   } catch (error) {
+//     console.error("SUBSCRIPTION ERROR:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+// app.listen(5000, () =>
+//   console.log("Server running on port 5000")
+// );
+
+
+
+
+
+
+
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -239,13 +558,53 @@ app.use(cors());
 app.use(express.json());
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_BANK_KEY_ID,
-  key_secret: process.env.RAZORPAY_BANK_SECRET
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
 /*
 ===============================
-CREATE SUBSCRIPTION (AUTOPAY)
+HELPER: GET OR CREATE PLAN
+===============================
+*/
+
+const getOrCreatePlan = async (amount) => {
+  const amountInPaise = amount * 100;
+
+  // Fetch existing plans
+  const plans = await razorpay.plans.all({ count: 100 });
+
+  const existingPlan = plans.items.find(
+    (p) =>
+      p.item.amount === amountInPaise &&
+      p.period === "monthly"
+  );
+
+  if (existingPlan) {
+    console.log("✅ Reusing existing plan:", existingPlan.id);
+    return existingPlan.id;
+  }
+
+  // Create new plan
+  const newPlan = await razorpay.plans.create({
+    period: "monthly",
+    interval: 1,
+    item: {
+      name: `Monthly Donation ₹${amount}`,
+      amount: amountInPaise,
+      currency: "INR",
+      description: "Monthly donation subscription"
+    }
+  });
+
+  console.log("🆕 Created new plan:", newPlan.id);
+
+  return newPlan.id;
+};
+
+/*
+===============================
+CREATE SUBSCRIPTION
 ===============================
 */
 
@@ -257,81 +616,136 @@ app.post("/create-subscription", async (req, res) => {
       phone,
       pan,
       planType,
-      childrenCount
+      childrenCount,
+      customAmount
     } = req.body;
 
-    let amount = 0;
-
-   if (planType === "education") amount = 800;
-   else if (planType === "food-education") amount = 1000;
-   else if (planType === "complete") amount = 1500;
-
+    let baseAmount = 0;
+    let finalAmount = 0;
     let planId = "";
 
-    // 👉 Map frontend plan → Razorpay plan
-    if (planType === "education") planId = "plan_SSedvRfVSTjI8W";
-    else if (planType === "food-education") planId = "plan_SSefAxfzZUbUS5";
-    else if (planType === "complete") planId = "plan_SSegFkIF03pob7";
+    /*
+    ===============================
+    DEFAULT PLANS
+    ===============================
+    */
+
+    if (planType === "education") {
+      baseAmount = 800;
+      planId = "plan_SSedvRfVSTjI8W";
+    } 
+    else if (planType === "food-education") {
+      baseAmount = 1000;
+      planId = "plan_SSefAxfzZUbUS5";
+    } 
+    else if (planType === "complete") {
+      baseAmount = 1500;
+      planId = "plan_SSegFkIF03pob7";
+    }
+
+    /*
+    ===============================
+    CUSTOM PLAN
+    ===============================
+    */
+
+    else if (planType === "custom") {
+
+      if (!customAmount || customAmount <= 0) {
+        return res.status(400).json({ error: "Invalid custom amount" });
+      }
+
+      baseAmount = customAmount;
+    }
+
     else {
       return res.status(400).json({ error: "Invalid plan" });
     }
 
-    let subscriptions = [];
+    /*
+    ===============================
+    FINAL AMOUNT (FIX 🔥)
+    ===============================
+    */
 
-    // 🔥 Create subscription per child
-    for (let i = 0; i < childrenCount; i++) {
+    finalAmount = baseAmount * childrenCount;
 
+    /*
+    ===============================
+    PLAN HANDLING
+    ===============================
+    */
 
-
-      // 1. Create customer
-const customers = await razorpay.customers.all({
-  email: email
-});
-
-let customer;
-
-if (customers.items.length > 0) {
-  customer = customers.items[0]; // ✅ reuse
-} else {
-  customer = await razorpay.customers.create({
-    name: fullName,
-    email: email,
-    contact: phone
-  });
-}
-
-// 2. Create subscription
-const subscription = await razorpay.subscriptions.create({
-  plan_id: planId,
-  customer_id: customer.id,
-  customer_notify: 1,
-  total_count: 12
-});
-
-      // Save each subscription
-      await db.execute(
-        `INSERT INTO donors 
-         (full_name, email, phone, pan, plan_type, children_count, amount, razorpay_subscription_id, payment_mode)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          fullName,
-          email,
-          phone,
-          pan,
-          planType,
-          1, // per child
-          amount,
-          subscription.id,
-          "autopay"
-        ]
-      );
-
-      subscriptions.push(subscription);
+    // For custom OR multi-child → dynamic plan
+    if (planType === "custom" || childrenCount > 1) {
+      planId = await getOrCreatePlan(finalAmount);
     }
+
+    /*
+    ===============================
+    CUSTOMER (REUSE)
+    ===============================
+    */
+
+    const customers = await razorpay.customers.all({ email });
+
+    let customer;
+
+    if (customers.items.length > 0) {
+      customer = customers.items[0];
+    } else {
+      customer = await razorpay.customers.create({
+        name: fullName,
+        email,
+        contact: phone
+      });
+    }
+
+    /*
+    ===============================
+    CREATE SINGLE SUBSCRIPTION ✅
+    ===============================
+    */
+
+    const subscription = await razorpay.subscriptions.create({
+      plan_id: planId,
+      customer_id: customer.id,
+      customer_notify: 1,
+      total_count: 12
+    });
+
+    /*
+    ===============================
+    SAVE TO DB
+    ===============================
+    */
+
+    await db.execute(
+      `INSERT INTO donors 
+       (full_name, email, phone, pan, plan_type, children_count, amount, razorpay_subscription_id, payment_mode)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        fullName,
+        email,
+        phone,
+        pan,
+        planType,
+        childrenCount,   // ✅ FIXED
+        finalAmount,     // ✅ FIXED (total amount)
+        subscription.id,
+        "autopay"
+      ]
+    );
+
+    /*
+    ===============================
+    RESPONSE
+    ===============================
+    */
 
     res.json({
       success: true,
-      subscriptions
+      subscriptions: [subscription]
     });
 
   } catch (error) {
@@ -339,6 +753,12 @@ const subscription = await razorpay.subscriptions.create({
     res.status(500).json({ error: error.message });
   }
 });
+
+/*
+===============================
+START SERVER
+===============================
+*/
 
 app.listen(5000, () =>
   console.log("Server running on port 5000")
