@@ -553,9 +553,14 @@ const cors = require("cors");
 const Razorpay = require("razorpay");
 const db = require("./config/db");
 
+// Contact form dependencies
+const contactRoutes = require("./routes/contactRoutes");  // this one is updated to import contact routes
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use("/api", contactRoutes);   //this one updated to use contact routes
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,

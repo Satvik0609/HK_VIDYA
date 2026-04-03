@@ -35,13 +35,48 @@ const ContactUs = () => {
     },
   });
 
-  const onSubmit = (data: ContactFormValues) => {
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for reaching out. We'll get back to you within 24-48 hours.",
+  // const onSubmit = (data: ContactFormValues) => {
+  //   toast({
+  //     title: "Message Sent!",
+  //     description: "Thank you for reaching out. We'll get back to you within 24-48 hours.",
+  //   });
+  //   form.reset();
+  // };
+
+
+
+  const onSubmit = async (data: ContactFormValues) => {
+  try {
+    const res = await fetch("http://localhost:5000/api/contact", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
-    form.reset();
-  };
+
+    const result = await res.json();
+
+    if (res.ok) {
+      toast({
+        title: "Message Sent!",
+        description: "Your message has been sent successfully ✅",
+      });
+      form.reset();
+    } else {
+      toast({
+        title: "Error",
+        description: result.message || "Failed to send message ❌",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "Server Error",
+      description: "Could not send message ❌",
+    });
+  }
+};
 
   const contactInfo = [
     {
